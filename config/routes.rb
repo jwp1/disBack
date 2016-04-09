@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  resources :games, except: [:new, :edit]
+  resources :questions, except: [:new, :edit]
   resources :ideas, except: [:new, :edit]
   post '/test' => 'application#test'
   post '/ideas/create' => 'ideas#create'
@@ -7,6 +9,11 @@ Rails.application.routes.draw do
   post '/ideas/vote' => 'ideas#vote'
   post '/ideas/request_winner' => 'ideas#request_winner'
   post '/ideas/destroy_all' => 'ideas#destroy_all'
+
+  post '/games/create' => 'games#create'
+  post '/games/show' => 'games#show'
+
+  post '/questions/index' => 'questions#index'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

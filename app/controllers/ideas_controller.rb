@@ -6,6 +6,7 @@ class IdeasController < ApplicationController
   def index
     @ideas = Idea.all
     @fights = {test: "test"}
+    
 
     render json: {ideas: @ideas, fights: @fights}
   end
@@ -47,7 +48,7 @@ class IdeasController < ApplicationController
   end
 
   def request_winner
-    @ideas = (Idea.find(params[:ids]))
+    @ideas = Idea.all
     @winner = @ideas.max_by(&:popularity)
 
     render json: @winner

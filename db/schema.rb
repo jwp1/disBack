@@ -11,10 +11,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160314232029) do
+ActiveRecord::Schema.define(version: 20160408181442) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "active_ideas", force: :cascade do |t|
+    t.integer  "game_id"
+    t.integer  "idea_id"
+    t.integer  "round"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "active_ideas", ["game_id"], name: "index_active_ideas_on_game_id", using: :btree
+  add_index "active_ideas", ["idea_id"], name: "index_active_ideas_on_idea_id", using: :btree
+
+  create_table "games", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "rounds"
+    t.integer  "input_timer"
+    t.integer  "battle_timer"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
 
   create_table "ideas", force: :cascade do |t|
     t.string   "name"
@@ -27,4 +47,15 @@ ActiveRecord::Schema.define(version: 20160314232029) do
     t.datetime "updated_at",              null: false
   end
 
+  create_table "questions", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "round"
+    t.integer  "game_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "questions", ["game_id"], name: "index_questions_on_game_id", using: :btree
+
+  add_foreign_key "questions", "games"
 end
