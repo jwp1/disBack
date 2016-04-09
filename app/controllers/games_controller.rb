@@ -12,7 +12,7 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
-    render json: {game:Game.last, questions: Question.all}
+    render json: {game:Game.last, questions: Game.last.questions.all}
   end
 
   # POST /games

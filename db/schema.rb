@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160408181442) do
+ActiveRecord::Schema.define(version: 20160409042203) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 20160408181442) do
     t.integer  "round"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer  "votes"
   end
 
   add_index "active_ideas", ["game_id"], name: "index_active_ideas_on_game_id", using: :btree

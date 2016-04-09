@@ -4,7 +4,7 @@ class IdeasController < ApplicationController
   # GET /ideas
   # GET /ideas.json
   def index
-    @ideas = Idea.all
+    @ideas = Game.find(params[:game]).ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
     @fights = {test: "test"}
     
 
@@ -20,9 +20,10 @@ class IdeasController < ApplicationController
   # POST /ideas
   # POST /ideas.json
   def create
+    @game = Game.find(params[:game])
     @idea = Idea.new(create_idea_params)
-
     if @idea.save
+      @game.active_ideas.create(round: params[:round], idea_id: @idea.id)
       render json: @idea, status: :created, location: @idea
     else
       render json: @idea.errors, status: :unprocessable_entity
@@ -43,13 +44,14 @@ class IdeasController < ApplicationController
 
   def vote
     @idea = Idea.find(params[:id])
-
+    @idea.active_ideas.find_by_game_id(params[:game]).increment!(:votes)
     @idea.increment!(:popularity)
   end
 
   def request_winner
-    @ideas = Idea.all
-    @winner = @ideas.max_by(&:popularity)
+    @game = Game.find(params[:game])
+    @ideas = @game.active_ideas.where(round:params[:round])
+    @winner = Idea.find(@ideas.order("votes DESC").first.idea_id)
 
     render json: @winner
   end
