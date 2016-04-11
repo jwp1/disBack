@@ -48,12 +48,31 @@ class IdeasController < ApplicationController
     @idea.increment!(:popularity)
   end
 
-  def request_winner
+  def display_winner
     @game = Game.find(params[:game])
     @ideas = @game.active_ideas.where(round:params[:round])
     @winner = Idea.find(@ideas.order("votes DESC").first.idea_id)
+    
+    render json: @winner
+  end
+
+  def decide_winner
+    @game = Game.find(params[:game])
+    @ideas = @game.active_ideas.where(round:params[:round])
+    ActiveIdea.find_by_idea_id(@ideas.order("votes DESC").first.idea_id).update_attribute(:winner,true)
+    puts "----"
 
     render json: @winner
+  end
+
+  def request_winner
+    @game = Game.find(params[:game])
+    if @idea_ref = @game.active_ideas.find_by_round_and_winner(params[:round], true)
+      @winner = Idea.find(@idea_ref.idea_id)
+      render json: @winner
+    else
+      render json: {error:true}
+    end
   end
 
   # DELETE /ideas/1

@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  resources :players, except: [:new, :edit]
+  resources :create_players, except: [:new, :edit]
   resources :games, except: [:new, :edit]
   resources :questions, except: [:new, :edit]
   resources :ideas, except: [:new, :edit]
@@ -8,6 +10,7 @@ Rails.application.routes.draw do
   post '/ideas/index' => 'ideas#index'
   post '/ideas/vote' => 'ideas#vote'
   post '/ideas/request_winner' => 'ideas#request_winner'
+  post '/ideas/decide_winner' => 'ideas#decide_winner'
   post '/ideas/destroy_all' => 'ideas#destroy_all'
 
   post '/games/create' => 'games#create'
