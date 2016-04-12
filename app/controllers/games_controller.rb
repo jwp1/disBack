@@ -13,10 +13,18 @@ class GamesController < ApplicationController
   # GET /games/1.json
   def show
     @game = Game.last
-    if (@game.current_round == 0)
+    if (@game.current_round == 0 && !params[:main])
       render json: {error:true}
     else
       render json: {game:Game.last, questions: Game.last.questions.all}
+    end
+  end
+
+  def start
+    @game = Game.find(params[:game])
+    if (@game.player_count == @game.players.count)
+      puts "YES"
+      @game.increment!(:current_round, 1)
     end
   end
 

@@ -6,9 +6,13 @@ class IdeasController < ApplicationController
   def index
     @ideas = Game.find(params[:game]).ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
     @fights = {test: "test"}
-    
-
-    render json: {ideas: @ideas, fights: @fights}
+    puts "Hhhhhhhhhhhhh"
+    puts @ideas.blank?
+    if !@ideas.blank?
+      render json: {ideas: @ideas, fights: @fights}
+    else
+      render json: {error: true}
+    end
   end
 
   # GET /ideas/1
@@ -21,10 +25,11 @@ class IdeasController < ApplicationController
   # POST /ideas.json
   def create
     @game = Game.find(params[:game])
-    if (@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
+    puts @game.active_ideas.exists?(:player_id => params[:player], :round => params[:round])
+    if (!@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
       @idea = Idea.new(create_idea_params)
       if @idea.save
-        @game.active_ideas.create(round: params[:round], idea_id: @idea.id)
+        @game.active_ideas.create(round: params[:round], idea_id: @idea.id, player_id: params[:player])
         render json: @idea, status: :created, location: @idea
       else
         render json: @idea.errors, status: :unprocessable_entity
@@ -55,28 +60,36 @@ class IdeasController < ApplicationController
   def display_winner
     @game = Game.find(params[:game])
     @ideas = @game.active_ideas.where(round:params[:round])
-    @winner = Idea.find(@ideas.order("votes DESC").first.idea_id)
-    @game.increment(:current_round, 1)
-    render json: @winner
+    puts @ideas
+    @max_votes = @ideas.maximum(:votes)
+    @idea = @ideas.where(votes: @max_votes).first
+    if (@idea)
+      @winner = Idea.find(@idea.idea_id)
+      @game.increment(:current_round, 1)
+      puts "wwwwwwwwwwww"
+      @player = @idea.player
+      puts @player
+
+      render json: {winner: @winner, player: @player}
+    else
+      render json: {error:true}
+    end
   end
 
   def decide_winner
     @game = Game.find(params[:game])
     @ideas = @game.active_ideas.where(round:params[:round])
-    ActiveIdea.find_by_idea_id(@ideas.order("votes DESC").first.idea_id).update_attribute(:winner,true)
+    @max_votes = @ideas.maximum(:votes)
+    @idea = @ideas.where(votes: @max_votes).first.update_attribute(:winner,true)
     puts "----"
 
     render json: @winner
   end
 
-  def request_winner
+  def request_winners
     @game = Game.find(params[:game])
-    if @idea_ref = @game.active_ideas.find_by_round_and_winner(params[:round], true)
-      @winner = Idea.find(@idea_ref.idea_id)
-      render json: @winner
-    else
-      render json: {error:true}
-    end
+    @winners = @game.active_ideas.where(winner: true)
+    render json: @winners
   end
 
   # DELETE /ideas/1

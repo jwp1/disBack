@@ -24,10 +24,6 @@ class PlayersController < ApplicationController
     else
       @player = @game.players.new(player_params)
       @player.save
-      if (@game.player_count == @game.players.count)
-        puts "YES"
-        @game.increment!(:current_round, 1)
-      end
       render json: {player: @player.id}
     end
   end

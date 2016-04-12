@@ -9,12 +9,14 @@ Rails.application.routes.draw do
   post '/ideas/create' => 'ideas#create'
   post '/ideas/index' => 'ideas#index'
   post '/ideas/vote' => 'ideas#vote'
-  post '/ideas/request_winner' => 'ideas#request_winner'
+  post '/ideas/request_winners' => 'ideas#request_winners'
   post '/ideas/decide_winner' => 'ideas#decide_winner'
+  post '/ideas/display_winner' => 'ideas#display_winner'
   post '/ideas/destroy_all' => 'ideas#destroy_all'
 
   post '/games/create' => 'games#create'
   post '/games/show' => 'games#show'
+  post '/games/start' => 'games#start'
 
   post '/player/join' => 'players#join'
 
