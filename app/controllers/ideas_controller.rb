@@ -21,12 +21,16 @@ class IdeasController < ApplicationController
   # POST /ideas.json
   def create
     @game = Game.find(params[:game])
-    @idea = Idea.new(create_idea_params)
-    if @idea.save
-      @game.active_ideas.create(round: params[:round], idea_id: @idea.id)
-      render json: @idea, status: :created, location: @idea
+    if (@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
+      @idea = Idea.new(create_idea_params)
+      if @idea.save
+        @game.active_ideas.create(round: params[:round], idea_id: @idea.id)
+        render json: @idea, status: :created, location: @idea
+      else
+        render json: @idea.errors, status: :unprocessable_entity
+      end
     else
-      render json: @idea.errors, status: :unprocessable_entity
+      render json: {error: true}
     end
   end
 
@@ -52,7 +56,7 @@ class IdeasController < ApplicationController
     @game = Game.find(params[:game])
     @ideas = @game.active_ideas.where(round:params[:round])
     @winner = Idea.find(@ideas.order("votes DESC").first.idea_id)
-    
+    @game.increment(:current_round, 1)
     render json: @winner
   end
 

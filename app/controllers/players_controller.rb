@@ -15,6 +15,23 @@ class PlayersController < ApplicationController
     render json: @player
   end
 
+  def join
+    params["player"]["colour"] = "%06x" % (rand * 0xffffff)
+    @game = Game.last
+
+    if (@game.player_count == @game.players.count)
+       render json: {error:true}
+    else
+      @player = @game.players.new(player_params)
+      @player.save
+      if (@game.player_count == @game.players.count)
+        puts "YES"
+        @game.increment!(:current_round, 1)
+      end
+      render json: {player: @player.id}
+    end
+  end
+
   # POST /players
   # POST /players.json
   def create

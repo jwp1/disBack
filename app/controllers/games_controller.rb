@@ -12,7 +12,19 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
-    render json: {game:Game.last, questions: Game.last.questions.all}
+    @game = Game.last
+    if (@game.current_round == 0)
+      render json: {error:true}
+    else
+      render json: {game:Game.last, questions: Game.last.questions.all}
+    end
+  end
+
+  def current_players
+    #@game = Game.find(params[:id])
+    @game = Game.last
+    @players = @game.players
+    render json: {players: @players}
   end
 
   # POST /games
@@ -22,12 +34,15 @@ class GamesController < ApplicationController
     Question.destroy_all
     questions = params["game"]["questions"]
     params["game"].delete("questions")
+    params["game"]["current_round"] = 0
     #puts game_params
     puts questions
     @game = Game.new(game_params)
     unless questions.nil?
       questions.each do |key, value|
-        @game.questions.new(name:value, round: key.to_i+1)
+        unless value.blank?
+          @game.questions.new(name:value, round: key.to_i+1)
+        end
       end
     end
     if @game.save
@@ -64,7 +79,7 @@ class GamesController < ApplicationController
     end
 
     def game_params
-      params.require(:game).permit(:name, :rounds, :input_timer, :battle_timer, :questions)
+      params.require(:game).permit(:name, :rounds, :input_timer, :battle_timer, :questions, :player_count)
     end
 
 end
