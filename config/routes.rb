@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
 
+  resources :uber_ideas, except: [:new, :edit]
   resources :players, except: [:new, :edit]
   resources :create_players, except: [:new, :edit]
   resources :games, except: [:new, :edit]
@@ -11,12 +12,19 @@ Rails.application.routes.draw do
   post '/ideas/vote' => 'ideas#vote'
   post '/ideas/request_winners' => 'ideas#request_winners'
   post '/ideas/decide_winner' => 'ideas#decide_winner'
+  post '/ideas/winner_decided' => 'ideas#winner_decided'
   post '/ideas/display_winner' => 'ideas#display_winner'
   post '/ideas/destroy_all' => 'ideas#destroy_all'
+
+  post '/uber_ideas/create' => 'uber_ideas#create'
+  post '/uber_ideas/index' => 'uber_ideas#index'
+  post '/uber_ideas/display_uber_winner' => 'uber_ideas#display_uber_winner'
+  post '/uber_ideas/vote' => 'uber_ideas#vote'
 
   post '/games/create' => 'games#create'
   post '/games/show' => 'games#show'
   post '/games/start' => 'games#start'
+  post '/games/round_over' => 'games#round_over'
 
   post '/player/join' => 'players#join'
 

@@ -20,6 +20,15 @@ class GamesController < ApplicationController
     end
   end
 
+  def round_over
+    @game = Game.find(params[:game])
+    if(@game.current_round == params[:round])
+      render json: {error:false}
+    else
+      render json: {error:true}
+    end
+  end
+
   def start
     @game = Game.find(params[:game])
     if (@game.player_count == @game.players.count)
