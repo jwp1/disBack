@@ -10,6 +10,7 @@ class UberIdeasController < ApplicationController
     puts @game.current_round
     if params[:main]
       @game.increment!(:current_round, 1)
+      @game.update_attribute(:voting_over,false)
     end
     if(@game.current_round-1 == params[:round])
       @ideas = @game.uber_ideas
@@ -33,8 +34,18 @@ class UberIdeasController < ApplicationController
 
 
   def vote
-    @idea = UberIdea.find(params[:id])
-    @idea.increment!(:votes)
+    @game = Game.find(params[:game])
+    if !@game.voting_over
+      @idea = UberIdea.find(params[:id])
+      if(@active_idea.player.id != params[:player])
+        @idea.increment!(:votes)
+        render json: {error: 0}
+      else
+        render json: {error: 1}
+      end
+    else
+      render json: {error: 2}
+    end
   end
 
   # POST /uber_ideas
@@ -46,6 +57,7 @@ class UberIdeasController < ApplicationController
     puts @ideas
     puts "wwww"
     @max_votes = @ideas.maximum(:votes)
+    @game.update_attribute(:voting_over,true)
     @idea = @ideas.where(votes: @max_votes).first
     if (@idea)
       puts "wwwwwwwwwwww"
@@ -63,10 +75,15 @@ class UberIdeasController < ApplicationController
 
   def create
     @game = Game.find(params[:game])
+    @strength = 0
+    for idea in Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id)).pluck(:name)
+      @strength = @strength+1 if uber_idea_params[:description].include?(idea)
+    end
     puts params[:player_id]
     puts @game.uber_ideas.exists?(:player_id => uber_idea_params[:player_id])
     if (!@game.uber_ideas.exists?(:player_id => uber_idea_params[:player_id]))
       @idea = @game.uber_ideas.new(uber_idea_params)
+      @idea.strength = @strength
       if @idea.save
         render json: @idea, status: :created, location: @idea
       else

@@ -10,6 +10,7 @@ class IdeasController < ApplicationController
     puts @game.current_round
     if params[:main]
       @game.increment!(:current_round, 1)
+      @game.update_attribute(:voting_over,false)
     end
     if(@game.current_round-1 == params[:round])
       @ideas = @game.ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
@@ -63,13 +64,25 @@ class IdeasController < ApplicationController
   end
 
   def vote
-    @idea = Idea.find(params[:id])
-    @idea.active_ideas.find_by_idea_id(params[:id]).increment!(:votes)
-    @idea.increment!(:popularity)
+    @game = Game.find(params[:game])
+    if !@game.voting_over
+      @idea = Idea.find(params[:id])
+      @active_idea = @game.active_ideas.find_by_idea_id(params[:id])
+      if(@active_idea.player.id != params[:player])
+        @active_idea.increment!(:votes)
+        @idea.increment!(:popularity)
+        render json: {error: 0}
+      else
+        render json: {error: 1}
+      end
+    else
+      render json: {error: 2}
+    end
   end
 
   def display_winner
     @game = Game.find(params[:game])
+    @game.update_attribute(:voting_over,true)
     @ideas = @game.active_ideas.where(round:params[:round])
     puts @ideas
     @max_votes = @ideas.maximum(:votes)
