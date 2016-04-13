@@ -37,7 +37,7 @@ class UberIdeasController < ApplicationController
     @game = Game.find(params[:game])
     if !@game.voting_over
       @idea = UberIdea.find(params[:id])
-      if(@active_idea.player.id != params[:player])
+      if(@idea.player.id != params[:player])
         @idea.increment!(:votes)
         render json: {error: 0}
       else
