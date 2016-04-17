@@ -9,6 +9,10 @@ class GamesController < ApplicationController
     render json: @games
   end
 
+  def putser
+    puts "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+  end
+
   # GET /games/1
   # GET /games/1.json
   def show
