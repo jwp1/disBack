@@ -37,18 +37,22 @@ class IdeasController < ApplicationController
   # POST /ideas.json
   def create
     @game = Game.find(params[:game])
-    puts @game.active_ideas.exists?(:player_id => params[:player], :round => params[:round])
-    if (!@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
-      @idea = Idea.new(create_idea_params)
-      if @idea.save
-        @game.active_ideas.create(round: params[:round], idea_id: @idea.id, player_id: params[:player])
-        render json: @idea, status: :created, location: @idea
+    #if @game.voting_over != true
+      puts @game.active_ideas.exists?(:player_id => params[:player], :round => params[:round])
+      if (!@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
+        @idea = Idea.new(create_idea_params)
+        if @idea.save
+          @game.active_ideas.create(round: params[:round], idea_id: @idea.id, player_id: params[:player])
+          render json: @idea, status: :created, location: @idea
+        else
+          render json: @idea.errors, status: :unprocessable_entity
+        end
       else
-        render json: @idea.errors, status: :unprocessable_entity
+        render json: {error: 1}
       end
-    else
-      render json: {error: true}
-    end
+    #else
+    #  render json: {error: 2}
+   # end
   end
 
   # PATCH/PUT /ideas/1

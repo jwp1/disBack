@@ -67,7 +67,7 @@ class UberIdeasController < ApplicationController
       puts @player
       puts "^^^"
 
-      render json: {winner: @idea, player: @player, players: @players, votes: @idea.votes}
+      render json: {winner: @idea, player: @player, players: @players}
     else
       render json: {error:true}
     end
