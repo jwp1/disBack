@@ -33,11 +33,12 @@ class UberIdeasController < ApplicationController
   def vote
     @game = Game.find(params[:game])
     @idea = UberIdea.find(params[:id])
-    if(@idea.player.id != params[:player])
-      @idea.increment!(:votes)
-      render json: {error: 0}
-    else
+    if (@game.voting_over)
       render json: {error: 1}
+    elsif(@idea.player.id == params[:player])
+      render json: {error: 2}
+    else
+      @idea.increment!(:votes)
     end
   end
 
@@ -46,35 +47,32 @@ class UberIdeasController < ApplicationController
 
   def display_uber_winner
     @game = Game.find(params[:game])
+    @players = @game.players
     @ideas = @game.uber_ideas
     puts @ideas
     puts "wwww"
     @max_votes = @ideas.maximum(:votes)
-    @game.update_attribute(:voting_over,true)
     @idea = @ideas.where(votes: @max_votes).first
     if (@idea)
       puts "wwwwwwwwwwww"
       @idea.player.increment!(:points)
-      @players = @game.players
       @player = @idea.player
       puts @player
       puts "^^^"
       WebsocketRails[:sockets].trigger 'next'
       render json: {winner: @idea, player: @player, players: @players}
     else
-      render json: {error:true}
+      render json: {error:true, players: @players}
     end
   end
 
   def create
     @game = Game.find(params[:game])
-    @strength = 0
-    for idea in Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id)).pluck(:name)
-      @strength = @strength+1 if uber_idea_params[:description].include?(idea)
-    end
-    puts params[:player_id]
-    puts @game.uber_ideas.exists?(:player_id => uber_idea_params[:player_id])
-    if (!@game.uber_ideas.exists?(:player_id => uber_idea_params[:player_id]))
+    if (@game.voting_over)
+      @strength = 0
+      for idea in Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id)).pluck(:name)
+        @strength = @strength+1 if uber_idea_params[:description].include?(idea)
+      end
       @idea = @game.uber_ideas.new(uber_idea_params)
       @idea.strength = @strength
       if @idea.save

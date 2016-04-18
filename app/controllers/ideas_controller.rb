@@ -11,7 +11,7 @@ class IdeasController < ApplicationController
     if params[:main]
       @game.increment!(:current_round, 1)
       @game.update_attribute(:voting_over,false)
-      @game.update_attribute(:submitting_over,true)
+      puts "NEXT CALL"
       WebsocketRails[:sockets].trigger 'next'
     end
     @ideas = @game.ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
@@ -35,8 +35,8 @@ class IdeasController < ApplicationController
   # POST /ideas.json
   def create
     @game = Game.find(params[:game])
-      puts @game.active_ideas.exists?(:player_id => params[:player], :round => params[:round])
-      if (!@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
+      puts @game.submitting_over
+      if (@game.voting_over)
         @idea = Idea.new(create_idea_params)
         if @idea.save
           @game.active_ideas.create(round: params[:round], idea_id: @idea.id, player_id: params[:player])
@@ -45,7 +45,7 @@ class IdeasController < ApplicationController
           render json: @idea.errors, status: :unprocessable_entity
         end
       else
-        render json: {error: 1}
+        render json: {error: true}
       end
   end
 
@@ -72,6 +72,7 @@ class IdeasController < ApplicationController
     @max_votes = @ideas.maximum(:votes)
     @idea = @ideas.where(votes: @max_votes).first
     if (@idea)
+      puts "Success"
       puts @idea.idea_id
       @idea.update_attribute(:winner,true)
       @idea.player.increment!(:points)
@@ -80,9 +81,13 @@ class IdeasController < ApplicationController
       puts "wwwwwwwwwwww"
       @player = @idea.player
       puts @player
+      puts "NEXT CALL"
       WebsocketRails[:sockets].trigger 'next'
       render json: {winner: @winner, player: @player, votes: @idea.votes}
     else
+      puts "NEXT CALL"
+      WebsocketRails[:sockets].trigger 'next'
+      puts "Fail"
       render json: {error:true}
     end
   end

@@ -13,6 +13,7 @@ class GamesController < ApplicationController
     @game = Game.find(params[:game])
     @game.update_attribute(:started, true)
     if (@game.player_count == @game.players.count)
+      puts "NEXT CALL"
       WebsocketRails[:sockets].trigger 'next'
       @game.increment!(:current_round, 1)
     end
