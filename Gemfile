@@ -10,6 +10,7 @@ gem 'pg'
 gem 'sqlite3'
 
 gem 'rack-cors', :require => 'rack/cors'
+gem 'puma'
 gem 'websocket-rails'
 
 # To use ActiveModel has_secure_password

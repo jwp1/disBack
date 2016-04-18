@@ -10,17 +10,14 @@ class UberIdeasController < ApplicationController
     puts @game.current_round
     if params[:main]
       @game.increment!(:current_round, 1)
+      WebsocketRails[:sockets].trigger 'next'
       @game.update_attribute(:voting_over,false)
     end
-    if(@game.current_round-1 == params[:round])
-      @ideas = @game.uber_ideas
-      puts "Hhhhhhhhhhhhh"
-      puts @ideas.blank?
-      if !@ideas.blank?
-        render json: {uber_ideas: @ideas}
-      else
-        render json: {error: true}
-      end
+    @ideas = @game.uber_ideas
+    puts "Hhhhhhhhhhhhh"
+    puts @ideas.blank?
+    if !@ideas.blank?
+      render json: {uber_ideas: @ideas}
     else
       render json: {error: true}
     end
@@ -35,16 +32,12 @@ class UberIdeasController < ApplicationController
 
   def vote
     @game = Game.find(params[:game])
-    if !@game.voting_over
-      @idea = UberIdea.find(params[:id])
-      if(@idea.player.id != params[:player])
-        @idea.increment!(:votes)
-        render json: {error: 0}
-      else
-        render json: {error: 1}
-      end
+    @idea = UberIdea.find(params[:id])
+    if(@idea.player.id != params[:player])
+      @idea.increment!(:votes)
+      render json: {error: 0}
     else
-      render json: {error: 2}
+      render json: {error: 1}
     end
   end
 
@@ -66,7 +59,7 @@ class UberIdeasController < ApplicationController
       @player = @idea.player
       puts @player
       puts "^^^"
-
+      WebsocketRails[:sockets].trigger 'next'
       render json: {winner: @idea, player: @player, players: @players}
     else
       render json: {error:true}

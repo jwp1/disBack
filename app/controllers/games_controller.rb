@@ -9,34 +9,17 @@ class GamesController < ApplicationController
     render json: @games
   end
 
-  def putser
-    puts "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
-  end
-
   # GET /games/1
   # GET /games/1.json
   def show
     @game = Game.last
-    if (@game.current_round == 0 && !params[:main])
-      render json: {error:true}
-    else
       render json: {game:Game.last, questions: Game.last.questions.all}
-    end
-  end
-
-  def round_over
-    @game = Game.find(params[:game])
-    if(@game.current_round == params[:round])
-      render json: {error:false}
-    else
-      render json: {error:true}
-    end
   end
 
   def start
     @game = Game.find(params[:game])
     if (@game.player_count == @game.players.count)
-      puts "YES"
+      WebsocketRails[:sockets].trigger 'next'
       @game.increment!(:current_round, 1)
     end
   end

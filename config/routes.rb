@@ -28,7 +28,6 @@ Rails.application.routes.draw do
 
   post '/player/join' => 'players#join'
 
-
   post '/games/current_players' => 'games#current_players'
 
   post '/questions/index' => 'questions#index'

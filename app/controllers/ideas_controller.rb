@@ -11,17 +11,14 @@ class IdeasController < ApplicationController
     if params[:main]
       @game.increment!(:current_round, 1)
       @game.update_attribute(:voting_over,false)
+      WebsocketRails[:sockets].trigger 'next'
     end
-    if(@game.current_round-1 == params[:round])
-      @ideas = @game.ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
-      @fights = {test: "test"}
-      puts "Hhhhhhhhhhhhh"
-      puts @ideas.blank?
-      if !@ideas.blank?
-        render json: {ideas: @ideas, fights: @fights}
-      else
-        render json: {error: true}
-      end
+    @ideas = @game.ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
+    @fights = {test: "test"}
+    puts "Hhhhhhhhhhhhh"
+    puts @ideas.blank?
+    if !@ideas.blank?
+      render json: {ideas: @ideas, fights: @fights}
     else
       render json: {error: true}
     end
@@ -37,7 +34,6 @@ class IdeasController < ApplicationController
   # POST /ideas.json
   def create
     @game = Game.find(params[:game])
-    #if @game.voting_over != true
       puts @game.active_ideas.exists?(:player_id => params[:player], :round => params[:round])
       if (!@game.active_ideas.exists?(:player_id => params[:player], :round => params[:round]) && !params[:player].blank?)
         @idea = Idea.new(create_idea_params)
@@ -50,9 +46,6 @@ class IdeasController < ApplicationController
       else
         render json: {error: 1}
       end
-    #else
-    #  render json: {error: 2}
-   # end
   end
 
   # PATCH/PUT /ideas/1
@@ -69,18 +62,14 @@ class IdeasController < ApplicationController
 
   def vote
     @game = Game.find(params[:game])
-    if !@game.voting_over
-      @idea = Idea.find(params[:id])
-      @active_idea = @game.active_ideas.find_by_idea_id(params[:id])
-      if(@active_idea.player.id != params[:player])
-        @active_idea.increment!(:votes)
-        @idea.increment!(:popularity)
-        render json: {error: 0}
-      else
-        render json: {error: 1}
-      end
+    @idea = Idea.find(params[:id])
+    @active_idea = @game.active_ideas.find_by_idea_id(params[:id])
+    if(@active_idea.player.id != params[:player])
+      @active_idea.increment!(:votes)
+      @idea.increment!(:popularity)
+      render json: {error: 0}
     else
-      render json: {error: 2}
+      render json: {error: 1}
     end
   end
 
@@ -93,27 +82,18 @@ class IdeasController < ApplicationController
     @idea = @ideas.where(votes: @max_votes).first
     if (@idea)
       puts @idea.idea_id
+      @idea.update_attribute(:winner,true)
       @idea.player.increment!(:points)
       @winner = Idea.find(@idea.idea_id)
       puts @winner.id
       puts "wwwwwwwwwwww"
       @player = @idea.player
       puts @player
-
+      WebsocketRails[:sockets].trigger 'next'
       render json: {winner: @winner, player: @player, votes: @idea.votes}
     else
       render json: {error:true}
     end
-  end
-
-  def decide_winner
-    @game = Game.find(params[:game])
-    @ideas = @game.active_ideas.where(round:params[:round])
-    @max_votes = @ideas.maximum(:votes)
-    @idea = @ideas.where(votes: @max_votes).first.update_attribute(:winner,true)
-    puts "----"
-
-    render json: @winner
   end
 
   def request_winners
@@ -132,15 +112,6 @@ class IdeasController < ApplicationController
     head :no_content
   end
 
-  def winner_decided
-    @game = Game.find(params[:game])
-    puts params[:round]
-    if(@game.active_ideas.exists?(winner:true,round:params[:round]-1))
-      render json: {error:false}
-    else
-      render json: {error:true}
-    end
-  end
 
    def destroy_all
     ActiveIdea.destroy_all
