@@ -12,5 +12,6 @@ class Game < ActiveRecord::Base
     self.submitting_over = false if self.new_record?
     self.voting_over = true if self.new_record?
     self.game_over = false if self.new_record?
+    self.started = false if self.new_record?
   end
 end

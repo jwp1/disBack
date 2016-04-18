@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
 
   resources :uber_ideas, except: [:new, :edit]
-  resources :players, except: [:new, :edit]
   resources :create_players, except: [:new, :edit]
   resources :games, except: [:new, :edit]
   resources :questions, except: [:new, :edit]
