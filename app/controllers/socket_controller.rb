@@ -8,7 +8,7 @@ class SocketController < WebsocketRails::BaseController
     p "WDAAAAAAAAAAAAAAAAAAAAAA"
     @game = Game.find(message[:game_id])
 		p 'user connected'
-		broadcast_message :player_joined, {game_id:@game.id}
+		broadcast_message :player_joined, {game_id:@game.id, current_players:@game.players.count}
     p 'Websocket'
   end
 
