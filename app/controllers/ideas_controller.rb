@@ -28,20 +28,11 @@ class IdeasController < ApplicationController
       @idea.player.increment!(:points)
       @winner = Idea.find(@idea.idea_id)
       @player = @idea.player
-      if(params[:round]+1 <= @game.rounds)
         WebsocketRails[:sockets].trigger(:next, {game_id: @game.id})
-      else
-        WebsocketRails[:sockets].trigger(:next, {game_id: @game.id,uber:true, winners:Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id))})
-      end
       render json: {winner: @winner, player: @player, votes: @idea.votes}
     else
-      if(params[:round]+1 <= @game.rounds)
         WebsocketRails[:sockets].trigger(:next, {game_id: @game.id})
         render json: {error:true}
-      else
-        WebsocketRails[:sockets].trigger(:next, {game_id: @game.id,uber:true, winners:Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id))})
-        render json: {winner: @winner, player: @player}
-      end
     end
   end
 

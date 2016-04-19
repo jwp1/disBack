@@ -21,12 +21,12 @@ class SocketController < WebsocketRails::BaseController
     elsif (@active_idea.player.id == message[:player])
       trigger_failure({error:2})
     else
-      if @game.active_ideas.where(round:message[:round]).count == @game.player_count
-        broadcast_message :ideas_submitted, {game_id:@game.id}
-      end
       trigger_success({success:true})
       @active_idea.increment!(:votes)
       @idea.increment!(:popularity)
+      if @game.active_ideas.where(round:@active_idea.round).sum(:votes) == @game.player_count
+        broadcast_message :ideas_submitted, {game_id:@game.id}
+      end
     end
   end
 
@@ -38,11 +38,11 @@ class SocketController < WebsocketRails::BaseController
     elsif (@idea.player.id == message[:player])
       trigger_failure({error:2})
     else
-      if @game.active_ideas.where(round:message[:round]).count == @game.player_count
-        broadcast_message :ideas_submitted, {game_id:@game.id}
-      end
       trigger_success({success:true})
       @idea.increment!(:votes)
+      if @game.uber_ideas.sum(:votes) == @game.player_count
+        broadcast_message :ideas_submitted, {game_id:@game.id}
+      end
     end
   end
 
@@ -74,13 +74,26 @@ class SocketController < WebsocketRails::BaseController
       @idea = @game.uber_ideas.new(message[:uber_idea])
       @idea.strength = @strength
       if @idea.save
-        if @game.active_ideas.where(round:message[:round]).count == @game.player_count
-            broadcast_message :ideas_submitted, {game_id:@game.id}
-          end
+        if @game.uber_ideas.count == @game.player_count
+          broadcast_message :ideas_submitted, {game_id:@game.id}
+        end
         trigger_success({success:true})
       end
     else
       trigger_failure({error:true})
     end
+  end
+
+  def winner_display
+    @game = Game.find(message[:game_id])
+    p "******************"
+    puts message[:round]
+    if(message[:round] < @game.rounds)
+        puts "oo"
+       WebsocketRails[:sockets].trigger(:next, {game_id: @game.id})
+     else
+        puts "pp"
+       WebsocketRails[:sockets].trigger(:next, {game_id: @game.id,uber:true, winners:Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id))})
+     end
   end
 end
