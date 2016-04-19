@@ -1,6 +1,9 @@
 WebsocketRails::EventMap.describe do
   subscribe :client_connected, :to => SocketController, :with_method => :client_connected
-  subscribe :things, :to => SocketController, :with_method => :things
+  subscribe :vote, :to => SocketController, :with_method => :vote
+  subscribe :vote_uber, :to => SocketController, :with_method => :vote_uber
+  subscribe :submit_idea, :to => SocketController, :with_method => :submit_idea
+  subscribe :submit_uber_idea, :to => SocketController, :with_method => :submit_uber_idea
   # You can use this file to map incoming events to controller actions.
   # One event can be mapped to any number of controller actions. The
   # actions will be executed in the order they were subscribed.

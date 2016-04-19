@@ -23,8 +23,10 @@ class GamesController < ApplicationController
     @game = Game.find(params[:game])
     @game.update_attribute(:started, true)
     if (@game.player_count == @game.players.count)
-      WebsocketRails[:sockets].trigger(:next, @game.id)
+      WebsocketRails[:sockets].trigger(:next, {game:@game, questions:@game.questions.all})
       @game.increment!(:current_round, 1)
+      puts "*********STARTING"
+      puts @game.current_round
     end
   end
 
@@ -34,8 +36,6 @@ class GamesController < ApplicationController
     render json: {players: @players}
   end
 
-  # POST /games
-  # POST /games.json
   def create
     if (params["game"]["rounds"].to_i > 0 && params["game"]["input_timer"].to_i > 9 && params["game"]["battle_timer"].to_i > 4 && params["game"]["player_count"].to_i > 0)
       questions = params["game"]["questions"]
