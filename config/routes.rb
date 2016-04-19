@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   post '/games/show' => 'games#show'
   post '/games/start' => 'games#start'
   post '/games/round_over' => 'games#round_over'
+  post '/games/join_id' => 'games#join_id'
 
   post '/player/join' => 'players#join'
 

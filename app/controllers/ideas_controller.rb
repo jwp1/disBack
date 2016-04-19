@@ -12,7 +12,7 @@ class IdeasController < ApplicationController
       @game.increment!(:current_round, 1)
       @game.update_attribute(:voting_over,false)
       puts "NEXT CALL"
-      WebsocketRails[:sockets].trigger 'next'
+      WebsocketRails[:sockets].trigger(:next, @game.id)
     end
     @ideas = @game.ideas.references( :active_ideas ).where( active_ideas: { round: params[:round] })
     @fights = {test: "test"}
@@ -82,7 +82,7 @@ class IdeasController < ApplicationController
       @player = @idea.player
       puts @player
       puts "NEXT CALL"
-      WebsocketRails[:sockets].trigger 'next'
+      WebsocketRails[:sockets].trigger(:next, @game.id)
       render json: {winner: @winner, player: @player, votes: @idea.votes}
     else
       puts "NEXT CALL"

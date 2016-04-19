@@ -10,7 +10,7 @@ class UberIdeasController < ApplicationController
     puts @game.current_round
     if params[:main]
       @game.increment!(:current_round, 1)
-      WebsocketRails[:sockets].trigger 'next'
+      WebsocketRails[:sockets].trigger(:next, @game.id)
       @game.update_attribute(:voting_over,false)
     end
     @ideas = @game.uber_ideas
@@ -59,7 +59,7 @@ class UberIdeasController < ApplicationController
       @player = @idea.player
       puts @player
       puts "^^^"
-      WebsocketRails[:sockets].trigger 'next'
+      WebsocketRails[:sockets].trigger(:next, @game.id)
       render json: {winner: @idea, player: @player, players: @players}
     else
       render json: {error:true, players: @players}
