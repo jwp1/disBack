@@ -4,9 +4,12 @@ class SocketController < WebsocketRails::BaseController
     controller_store[:message_count] = 0
   end
 
-  def client_connected
+  def player_joined
+    p "WDAAAAAAAAAAAAAAAAAAAAAA"
+    @game = Game.find(message[:game_id])
 		p 'user connected'
-		send_message :user_info, {:user => current_user.screen_name}
+		broadcast_message :player_joined, {game_id:@game.id}
+    p 'Websocket'
   end
 
   def vote
@@ -18,6 +21,9 @@ class SocketController < WebsocketRails::BaseController
     elsif (@active_idea.player.id == message[:player])
       trigger_failure({error:2})
     else
+      if @game.active_ideas.where(round:message[:round]).count == @game.player_count
+        broadcast_message :ideas_submitted, {game_id:@game.id}
+      end
       trigger_success({success:true})
       @active_idea.increment!(:votes)
       @idea.increment!(:popularity)
@@ -32,6 +38,9 @@ class SocketController < WebsocketRails::BaseController
     elsif (@idea.player.id == message[:player])
       trigger_failure({error:2})
     else
+      if @game.active_ideas.where(round:message[:round]).count == @game.player_count
+        broadcast_message :ideas_submitted, {game_id:@game.id}
+      end
       trigger_success({success:true})
       @idea.increment!(:votes)
     end
@@ -45,6 +54,9 @@ class SocketController < WebsocketRails::BaseController
         @idea = Idea.new(message[:idea])
         if @idea.save
           @game.active_ideas.create(round: message[:round], idea_id: @idea.id, player_id: message[:player])
+          if @game.active_ideas.where(round:message[:round]).count == @game.player_count
+            broadcast_message :ideas_submitted, {game_id:@game.id}
+          end
           trigger_success({success:true})
         end
       else
@@ -62,6 +74,9 @@ class SocketController < WebsocketRails::BaseController
       @idea = @game.uber_ideas.new(message[:uber_idea])
       @idea.strength = @strength
       if @idea.save
+        if @game.active_ideas.where(round:message[:round]).count == @game.player_count
+            broadcast_message :ideas_submitted, {game_id:@game.id}
+          end
         trigger_success({success:true})
       end
     else

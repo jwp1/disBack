@@ -37,11 +37,11 @@ class IdeasController < ApplicationController
     else
       if(params[:round]+1 <= @game.rounds)
         WebsocketRails[:sockets].trigger(:next, {game_id: @game.id})
+        render json: {error:true}
       else
         WebsocketRails[:sockets].trigger(:next, {game_id: @game.id,uber:true, winners:Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id))})
         render json: {winner: @winner, player: @player}
       end
-      render json: {error:true}
     end
   end
 

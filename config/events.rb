@@ -1,5 +1,5 @@
 WebsocketRails::EventMap.describe do
-  subscribe :client_connected, :to => SocketController, :with_method => :client_connected
+  subscribe :player_joined, :to => SocketController, :with_method => :player_joined
   subscribe :vote, :to => SocketController, :with_method => :vote
   subscribe :vote_uber, :to => SocketController, :with_method => :vote_uber
   subscribe :submit_idea, :to => SocketController, :with_method => :submit_idea
