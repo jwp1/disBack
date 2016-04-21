@@ -1,12 +1,7 @@
 class GamesController < ApplicationController
 
   def show
-    
-    if(params["main"])
-      @game = Game.last
-    else
-      @game = Game.find(params[:game])
-    end
+    @game = Game.find(params[:game])
     if((params["main"] && @game.started) || !@game)
       render json: {error:true}
     else
@@ -14,26 +9,15 @@ class GamesController < ApplicationController
     end
   end
 
-  def join_id
-    @game = Game.last
-    render {id:@game.id}
-  end
-
   def start
     @game = Game.find(params[:game])
     @game.update_attribute(:started, true)
     if (@game.player_count == @game.players.count)
-      WebsocketRails[:sockets].trigger(:next, {game:@game, questions:@game.questions.all})
+      WebsocketRails[:sockets].trigger(:next, {game_id: @game.id, game:@game, questions:@game.questions.all})
       @game.increment!(:current_round, 1)
       puts "*********STARTING"
       puts @game.current_round
     end
-  end
-
-  def current_players
-    @game = Game.find(params[:game])
-    @players = @game.players
-    render json: {players: @players}
   end
 
   def create
