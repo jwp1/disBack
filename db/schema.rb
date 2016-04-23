@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160416201436) do
+ActiveRecord::Schema.define(version: 20160418142639) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,9 +20,9 @@ ActiveRecord::Schema.define(version: 20160416201436) do
     t.integer  "game_id"
     t.integer  "idea_id"
     t.integer  "round"
+    t.integer  "votes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer  "votes"
     t.integer  "player_id"
     t.boolean  "winner"
   end
@@ -43,14 +43,12 @@ ActiveRecord::Schema.define(version: 20160416201436) do
     t.boolean  "voting_over"
     t.boolean  "game_over"
     t.boolean  "submitting_over"
+    t.boolean  "started"
   end
 
   create_table "ideas", force: :cascade do |t|
     t.string   "name"
     t.text     "description"
-    t.string   "picture"
-    t.string   "categories"
-    t.boolean  "temporary"
     t.integer  "popularity",  default: 0
     t.datetime "created_at",              null: false
     t.datetime "updated_at",              null: false
@@ -58,7 +56,6 @@ ActiveRecord::Schema.define(version: 20160416201436) do
 
   create_table "players", force: :cascade do |t|
     t.string   "name"
-    t.string   "colour"
     t.integer  "game_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

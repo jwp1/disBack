@@ -1,93 +1,47 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:update, :destroy]
 
-  # GET /games
-  # GET /games.json
-  def index
-    @games = Game.all
-
-    render json: @games
-  end
-
-  # GET /games/1
-  # GET /games/1.json
   def show
-    @game = Game.last
-    if (@game.current_round == 0 && !params[:main])
-      render json: {error:true}
-    else
-      render json: {game:Game.last, questions: Game.last.questions.all}
-    end
-  end
-
-  def round_over
     @game = Game.find(params[:game])
-    if(@game.current_round == params[:round])
-      render json: {error:false}
-    else
+    if((params["main"] && @game.started) || !@game)
       render json: {error:true}
+    else
+      render json: {game:@game, questions: @game.questions.all}
     end
   end
 
   def start
     @game = Game.find(params[:game])
+    @game.update_attribute(:started, true)
     if (@game.player_count == @game.players.count)
-      puts "YES"
+      WebsocketRails[:sockets].trigger(:next, {game_id: @game.id, game:@game, questions:@game.questions.all})
       @game.increment!(:current_round, 1)
+      puts "*********STARTING"
+      puts @game.current_round
     end
   end
 
-  def current_players
-    #@game = Game.find(params[:id])
-    @game = Game.last
-    @players = @game.players
-    render json: {players: @players}
-  end
-
-  # POST /games
-  # POST /games.json
   def create
-    #puts "-----------"
-    Question.destroy_all
-    questions = params["game"]["questions"]
-    params["game"].delete("questions")
-    params["game"]["current_round"] = 0
-    #puts game_params
-    puts questions
-    @game = Game.new(game_params)
-    unless questions.nil?
-      questions.each do |key, value|
-        unless value.blank?
-          @game.questions.new(name:value, round: key.to_i+1)
+    if (params["game"]["rounds"].to_i > 0 && params["game"]["input_timer"].to_i > 9 && params["game"]["battle_timer"].to_i > 4 && params["game"]["player_count"].to_i > 0)
+      questions = params["game"]["questions"]
+      params["game"].delete("questions")
+      @game = Game.new(game_params)
+      unless questions.nil?
+        questions.each do |key, value|
+          unless value.blank?
+            @game.questions.new(name:value, round: key.to_i+1)
+          end
         end
       end
-    end
-    if @game.save
-      render json: @game, status: :created, location: @game
+      if @game.save
+        render json: {game:@game.id}
+      else
+        render json: @game.errors, status: :unprocessable_entity
+      end
     else
-      render json: @game.errors, status: :unprocessable_entity
+      render json: {error: true}
     end
   end
 
-  # PATCH/PUT /games/1
-  # PATCH/PUT /games/1.json
-  def update
-    @game = Game.find(params[:id])
-
-    if @game.update(game_params)
-      head :no_content
-    else
-      render json: @game.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /games/1
-  # DELETE /games/1.json
-  def destroy
-    @game.destroy
-
-    head :no_content
-  end
 
   private
 
