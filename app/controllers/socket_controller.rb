@@ -1,15 +1,8 @@
 class SocketController < WebsocketRails::BaseController
-  def initialize_session
-    # perform application setup here
-    controller_store[:message_count] = 0
-  end
 
   def player_joined
-    p "WDAAAAAAAAAAAAAAAAAAAAAA"
     @game = Game.find(message[:game_id])
-		p 'user connected'
 		broadcast_message :player_joined, {game_id:@game.id, current_players:@game.players.count}
-    p 'Websocket'
   end
 
   def vote
@@ -48,8 +41,6 @@ class SocketController < WebsocketRails::BaseController
 
   def submit_idea
     @game = Game.find(message[:game])
-    puts "SUBMITTING**********************"
-    puts message[:round]
       if (@game.voting_over)
         @idea = Idea.new(message[:idea])
         if @idea.save
@@ -86,13 +77,9 @@ class SocketController < WebsocketRails::BaseController
 
   def winner_display
     @game = Game.find(message[:game_id])
-    p "******************"
-    puts message[:round]
     if(message[:round] < @game.rounds)
-        puts "oo"
        WebsocketRails[:sockets].trigger(:next, {game_id: @game.id})
      else
-        puts "pp"
        WebsocketRails[:sockets].trigger(:next, {game_id: @game.id,uber:true, winners:Idea.where(id:@game.active_ideas.where(winner:true).pluck(:idea_id))})
      end
   end

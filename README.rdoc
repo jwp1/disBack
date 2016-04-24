@@ -1,28 +1,16 @@
 == README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a basic readme for the serverside of Brainstrom, my (Jack Pryde) project
+for my dissertation.
 
-Things you may want to cover:
+Ruby 2.1.4
+Rails 4.2.0
 
-* Ruby version
+For information on the gems used see the Gemfile.
 
-* System dependencies
+Set-up on Apache 2.4.6.
 
-* Configuration
+Websocket traffic occurs on <DOMAIN>/websocket and requires appropriate handling by Apache
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+Back-end currently hosted on "jackie.elrok.com"
+Front-end currently hosted on "jacky.elrok.com/app"

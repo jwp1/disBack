@@ -15,8 +15,6 @@ class GamesController < ApplicationController
     if (@game.player_count == @game.players.count)
       WebsocketRails[:sockets].trigger(:next, {game_id: @game.id, game:@game, questions:@game.questions.all})
       @game.increment!(:current_round, 1)
-      puts "*********STARTING"
-      puts @game.current_round
     end
   end
 
